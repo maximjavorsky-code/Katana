@@ -1,0 +1,193 @@
+# ===== IMPORT KNIHOVEN =====
+import os
+from enum import Enum
+
+# ===== TŘÍDA PRO OPERACE =====
+
+class Operace(Enum):
+    """Definuje dostupné operace"""
+    SOUCET = "+"
+    ROZDIL = "-"
+    SOUCIN = "*"
+    PODIL = "/"
+    MOCNINA = "**"
+    MODULO = "%"
+
+
+class Kalkulator:
+    """Jednoduchá kalkulačka s historií operací"""
+    
+    def __init__(self):
+        """Inicializace kalkulačky"""
+        self.historia = []
+        self.vysledek = 0
+    
+    def vymaž_konzolu(self):
+        """Vymaže obsah konzoly"""
+        os.system('cls' if os.name == 'nt' else 'clear')
+    
+    def zobraz_menu(self):
+        """Zobrazí hlavní menu"""
+        self.vymaž_konzolu()
+        print("=" * 50)
+        print("🧮 KALKULAČKA 🧮".center(50))
+        print("=" * 50)
+        print("\nOperace:")
+        print("  1 - Sčítání (+)")
+        print("  2 - Odčítání (-)")
+        print("  3 - Násobení (*)")
+        print("  4 - Dělení (/)")
+        print("  5 - Mocnina (**)")
+        print("  6 - Modulo (%)")
+        print("  7 - Zobrazit historii")
+        print("  8 - Vymazat historii")
+        print("  9 - Konec")
+        print("\n" + "=" * 50)
+    
+    def ziskej_cislo(self, prompt="Zadejte číslo: "):
+        """Bezpečně získá číslo od uživatele"""
+        while True:
+            try:
+                cislo = float(input(prompt))
+                return cislo
+            except ValueError:
+                print("❌ Chyba! Zadejte prosím platné číslo.")
+    
+    def soucet(self):
+        """Sčítání"""
+        a = self.ziskej_cislo("Zadejte první číslo: ")
+        b = self.ziskej_cislo("Zadejte druhé číslo: ")
+        vysledek = a + b
+        self.uloz_do_historie(f"{a} + {b}", vysledek)
+        self.zobraz_vysledek(vysledek)
+    
+    def rozdil(self):
+        """Odčítání"""
+        a = self.ziskej_cislo("Zadejte první číslo: ")
+        b = self.ziskej_cislo("Zadejte druhé číslo: ")
+        vysledek = a - b
+        self.uloz_do_historie(f"{a} - {b}", vysledek)
+        self.zobraz_vysledek(vysledek)
+    
+    def soucin(self):
+        """Násobení"""
+        a = self.ziskej_cislo("Zadejte první číslo: ")
+        b = self.ziskej_cislo("Zadejte druhé číslo: ")
+        vysledek = a * b
+        self.uloz_do_historie(f"{a} * {b}", vysledek)
+        self.zobraz_vysledek(vysledek)
+    
+    def podil(self):
+        """Dělení"""
+        a = self.ziskej_cislo("Zadejte dělence: ")
+        b = self.ziskej_cislo("Zadejte dělitele: ")
+        
+        if b == 0:
+            print("❌ Chyba! Nelze dělit nulou!")
+            input("Stiskněte Enter pro pokračování...")
+            return
+        
+        vysledek = a / b
+        self.uloz_do_historie(f"{a} / {b}", vysledek)
+        self.zobraz_vysledek(vysledek)
+    
+    def mocnina(self):
+        """Umocňování"""
+        a = self.ziskej_cislo("Zadejte základ: ")
+        b = self.ziskej_cislo("Zadejte exponent: ")
+        vysledek = a ** b
+        self.uloz_do_historie(f"{a} ** {b}", vysledek)
+        self.zobraz_vysledek(vysledek)
+    
+    def modulo(self):
+        """Zbytek po dělení"""
+        a = self.ziskej_cislo("Zadejte první číslo: ")
+        b = self.ziskej_cislo("Zadejte druhé číslo: ")
+        
+        if b == 0:
+            print("❌ Chyba! Nelze počítat modulo s nulou!")
+            input("Stiskněte Enter pro pokračování...")
+            return
+        
+        vysledek = a % b
+        self.uloz_do_historie(f"{a} % {b}", vysledek)
+        self.zobraz_vysledek(vysledek)
+    
+    def zobraz_vysledek(self, vysledek):
+        """Zobrazí výsledek operace"""
+        print("\n" + "=" * 50)
+        print(f"✓ Výsledek: {vysledek}")
+        print("=" * 50)
+        self.vysledek = vysledek
+        input("\nStiskněte Enter pro pokračování...")
+    
+    def uloz_do_historie(self, operace, vysledek):
+        """Uloží operaci do historie"""
+        zaznam = f"{operace} = {vysledek}"
+        self.historia.append(zaznam)
+    
+    def zobraz_historii(self):
+        """Zobrazí historii operací"""
+        self.vymaž_konzolu()
+        print("=" * 50)
+        print("📋 HISTORIE OPERACÍ 📋".center(50))
+        print("=" * 50)
+        
+        if not self.historia:
+            print("\nHistoria je prázdná!")
+        else:
+            for i, zaznam in enumerate(self.historia, 1):
+                print(f"{i}. {zaznam}")
+        
+        print("\n" + "=" * 50)
+        input("Stiskněte Enter pro pokračování...")
+    
+    def vymaz_historii(self):
+        """Vymaže historii operací"""
+        potvrdit = input("Opravdu chcete vymazat historii? (ano/ne): ").lower()
+        if potvrdit in ['ano', 'a', 'yes', 'y']:
+            self.historia = []
+            print("✓ Historia byla vymazána!")
+        else:
+            print("Zrušeno.")
+        input("Stiskněte Enter pro pokračování...")
+    
+    def spusti(self):
+        """Spustí hlavní smyčku kalkulačky"""
+        while True:
+            self.zobraz_menu()
+            
+            volba = input("Vyberte operaci (1-9): ").strip()
+            
+            if volba == '1':
+                self.soucet()
+            elif volba == '2':
+                self.rozdil()
+            elif volba == '3':
+                self.soucin()
+            elif volba == '4':
+                self.podil()
+            elif volba == '5':
+                self.mocnina()
+            elif volba == '6':
+                self.modulo()
+            elif volba == '7':
+                self.zobraz_historii()
+            elif volba == '8':
+                self.vymaz_historii()
+            elif volba == '9':
+                print("\n👋 Na shledanou!")
+                break
+            else:
+                print("❌ Neplatná volba! Vyberte prosím číslo 1-9.")
+                input("Stiskněte Enter pro pokračování...")
+
+
+def main():
+    """Hlavní funkce"""
+    kalkulator = Kalkulator()
+    kalkulator.spusti()
+
+
+if __name__ == "__main__":
+    main()
