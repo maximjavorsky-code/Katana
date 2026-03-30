@@ -25,7 +25,7 @@ COLORS = [
     (255, 165, 0)    # Orange - L
 ]
 
-# Definice tetris tvarů (tetromino)
+# Tetromino tvary
 SHAPES = [
     [[1, 1, 1, 1]],           # I
     [[1, 1], [1, 1]],         # O
@@ -38,11 +38,9 @@ SHAPES = [
     [[1, 0], [1, 1], [1, 0]]  # Plus variant
 ]
 
-# Funkce pro vytvoření prázdné mřížky
 def create_grid():
     return [[0 for _ in range(WIDTH // BLOCK_SIZE)] for _ in range(HEIGHT // BLOCK_SIZE)]
 
-# Funkce pro vykreslení mřížky
 def draw_grid(grid):
     for y, row in enumerate(grid):
         for x, cell in enumerate(row):
@@ -52,7 +50,6 @@ def draw_grid(grid):
                 pygame.draw.rect(screen, BLACK,
                                  (x * BLOCK_SIZE, y * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE), 1)
 
-# Třída pro padající blok
 class Piece:
     def __init__(self):
         self.shape = random.choice(SHAPES)
@@ -60,7 +57,6 @@ class Piece:
         self.x = WIDTH // BLOCK_SIZE // 2 - len(self.shape[0]) // 2
         self.y = 0
 
-    # vykreslení bloku
     def draw(self):
         for y, row in enumerate(self.shape):
             for x, cell in enumerate(row):
@@ -74,11 +70,9 @@ class Piece:
                                       (self.y + y) * BLOCK_SIZE,
                                       BLOCK_SIZE, BLOCK_SIZE), 1)
 
-    # otáčení bloku
     def rotate(self):
         self.shape = [list(row) for row in zip(*self.shape[::-1])]
 
-# Kontrola kolize
 def collision(piece, grid):
     for y, row in enumerate(piece.shape):
         for x, cell in enumerate(row):
@@ -91,14 +85,12 @@ def collision(piece, grid):
                     return True
     return False
 
-# Zamknutí bloku do mřížky
 def merge(piece, grid):
     for y, row in enumerate(piece.shape):
         for x, cell in enumerate(row):
             if cell:
                 grid[piece.y + y][piece.x + x] = piece.color
 
-# Mazání plných řádků a skóre
 def clear_rows(grid):
     cleared = 0
     new_grid = []
@@ -111,11 +103,13 @@ def clear_rows(grid):
         new_grid.insert(0, [0 for _ in range(len(grid[0]))])
     return new_grid, cleared
 
-# Hlavní smyčka hry
 def main():
     grid = create_grid()
     piece = Piece()
     score = 0
+    fall_speed = 500  # počáteční rychlost pádu (ms)
+    level_up_interval = 5000  # zrychlení každých 5 sekund
+    last_level_up = pygame.time.get_ticks()
 
     clock = pygame.time.Clock()
     fall_time = 0
@@ -123,18 +117,28 @@ def main():
     font = pygame.font.SysFont("Arial", 24)
     running = True
     while running:
+        current_time = pygame.time.get_ticks()
+        # postupné zrychlování
+        if current_time - last_level_up > level_up_interval and fall_speed > 100:
+            fall_speed -= 50
+            last_level_up = current_time
+
         screen.fill(BLACK)
         fall_time += clock.get_rawtime()
         clock.tick()
 
-        # Pohyb dolů každých 500 ms
-        if fall_time > 500:
+        # Rychlejší pád při držení šipky dolů
+        keys = pygame.key.get_pressed()
+        current_speed = fall_speed // 10 if keys[pygame.K_DOWN] else fall_speed
+
+        if fall_time > current_speed:
             piece.y += 1
             if collision(piece, grid):
                 piece.y -= 1
                 merge(piece, grid)
                 grid, cleared = clear_rows(grid)
-                score += cleared * 100
+                if cleared > 0:
+                    score += cleared * 100
                 piece = Piece()
                 if collision(piece, grid):
                     print("Game Over")
@@ -151,30 +155,34 @@ def main():
                     piece.x -= 1
                     if collision(piece, grid):
                         piece.x += 1
-
                 if event.key == pygame.K_RIGHT:
                     piece.x += 1
                     if collision(piece, grid):
                         piece.x -= 1
-
-                if event.key == pygame.K_DOWN:
-                    piece.y += 1
-                    if collision(piece, grid):
-                        piece.y -= 1
-
                 if event.key == pygame.K_UP:
                     piece.rotate()
                     if collision(piece, grid):
                         for _ in range(3):
                             piece.rotate()
+                if event.key == pygame.K_SPACE:  # hard drop
+                    while not collision(piece, grid):
+                        piece.y += 1
+                    piece.y -= 1
+                    merge(piece, grid)
+                    grid, cleared = clear_rows(grid)
+                    if cleared > 0:
+                        score += cleared * 100
+                    piece = Piece()
+                    if collision(piece, grid):
+                        print("Game Over")
+                        running = False
 
-        # Vykreslení skóre
+        # Skóre
         score_text = font.render(f"Score: {score}", True, WHITE)
         screen.blit(score_text, (5, 5))
-
-        # Vykreslení ovládání
-        control_text = font.render("Rotate: Up Arrow", True, WHITE)
-        screen.blit(control_text, (WIDTH - 160, 5))
+        # Ovládání
+        control_text = font.render("Rotate: Up, Drop: Space", True, WHITE)
+        screen.blit(control_text, (WIDTH - 200, 5))
 
         draw_grid(grid)
         piece.draw()
