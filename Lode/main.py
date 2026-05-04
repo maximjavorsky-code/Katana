@@ -108,7 +108,6 @@ def main():
             print("Vyhrál jsi! Všechny lodě potopeny.")
             print_board(board, hide_ships=False)
             break
-
-
-if __name__ == "__main__":
-    main()
+while True:
+    if input() == "konec":
+        break
