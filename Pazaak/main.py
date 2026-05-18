@@ -71,8 +71,6 @@ while running:
     tut_btn = button("TUTORIAL", WIDTH//2 - 150, 330, 300, 65)
     exit_btn = button("EXIT", WIDTH//2 - 150, 420, 300, 65)
 
-    two_player_btn = button("2 PLAYER", WIDTH//2 - 150, 510, 300, 65)
-
     pygame.display.update()
 
     for event in pygame.event.get():
@@ -82,9 +80,6 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if start_btn.collidepoint(event.pos):
                 subprocess.run([sys.executable, "Pazaak/pazaak.py"])
-
-            if two_player_btn.collidepoint(event.pos):
-                subprocess.run([sys.executable, "Pazaak/pazaak_2p.py"])
 
             if tut_btn.collidepoint(event.pos):
                 subprocess.run([sys.executable, "Pazaak/tutorial.py"])
