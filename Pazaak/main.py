@@ -6,78 +6,115 @@ pygame.init()
 
 WIDTH, HEIGHT = 900, 650
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Pazaak")
+pygame.display.set_caption("PAZAAK")
 
 clock = pygame.time.Clock()
 
+# ----------------------------
+# LOAD BACKGROUND
+# ----------------------------
+bg = pygame.image.load("Pazaak/assets/lobby_bg.png")
+bg = pygame.transform.scale(bg, (WIDTH, HEIGHT))
+
+# ----------------------------
 # COLORS
-BG = (8, 10, 25)
-PANEL = (20, 25, 60)
-ACCENT = (120, 180, 255)
-HOVER = (180, 220, 255)
-TEXT = (230, 240, 255)
+# ----------------------------
+GOLD = (210, 170, 90)
+HOVER = (255, 210, 120)
+TEXT = (240, 220, 170)
 
-FONT = pygame.font.SysFont("consolas", 30)
-BIG = pygame.font.SysFont("consolas", 64)
+FONT = pygame.font.SysFont("timesnewroman", 34)
+BIG = pygame.font.SysFont("timesnewroman", 92)
 
-
-def draw_glow(rect, color):
-    glow_surf = pygame.Surface((rect.w + 20, rect.h + 20), pygame.SRCALPHA)
-    pygame.draw.rect(glow_surf, (*color, 40), glow_surf.get_rect(), border_radius=15)
-    screen.blit(glow_surf, (rect.x - 10, rect.y - 10))
-
-
+# ----------------------------
+# BUTTON
+# ----------------------------
 def button(text, x, y, w, h):
     mouse = pygame.mouse.get_pos()
+
     rect = pygame.Rect(x, y, w, h)
 
     hovered = rect.collidepoint(mouse)
 
-    color = HOVER if hovered else PANEL
+    # transparent surface
+    surf = pygame.Surface((w, h), pygame.SRCALPHA)
 
     if hovered:
-        draw_glow(rect, ACCENT)
+        pygame.draw.rect(
+            surf,
+            (255, 220, 140, 45),
+            surf.get_rect(),
+            border_radius=6
+        )
+        border = HOVER
+    else:
+        pygame.draw.rect(
+            surf,
+            (20, 10, 5, 160),
+            surf.get_rect(),
+            border_radius=6
+        )
+        border = GOLD
 
-    pygame.draw.rect(screen, color, rect, border_radius=12)
-    pygame.draw.rect(screen, ACCENT, rect, 2, border_radius=12)
+    screen.blit(surf, (x, y))
 
-    label = FONT.render(text, True, TEXT)
-    label_rect = label.get_rect(center=rect.center)
-    screen.blit(label, label_rect)
+    pygame.draw.rect(screen, border, rect, 2, border_radius=6)
+
+    label = FONT.render(text, True, border)
+
+    screen.blit(label, label.get_rect(center=rect.center))
 
     return rect
 
 
-def draw_bg():
-    screen.fill(BG)
+# ----------------------------
+# DRAW
+# ----------------------------
+def draw():
+    screen.blit(bg, (0, 0))
 
-    # subtle gradient line
-    pygame.draw.line(screen, ACCENT, (200, 140), (700, 140), 2)
+    # dark cinematic overlay
+    overlay = pygame.Surface((WIDTH, HEIGHT), pygame.SRCALPHA)
+    overlay.fill((0, 0, 0, 40))
+    screen.blit(overlay, (0, 0))
 
-    title = BIG.render("PAZAAK", True, ACCENT)
-    subtitle = FONT.render("KOTOR STYLE LOBBY", True, TEXT)
+    # title glow
+    title = BIG.render("PAZAAK", True, GOLD)
 
-    screen.blit(title, title.get_rect(center=(WIDTH // 2, 100)))
-    screen.blit(subtitle, subtitle.get_rect(center=(WIDTH // 2, 150)))
+    glow = BIG.render("PAZAAK", True, (80, 50, 10))
+    screen.blit(glow, glow.get_rect(center=(WIDTH//2 + 3, 88)))
+
+    screen.blit(title, title.get_rect(center=(WIDTH//2, 85)))
 
 
+# ----------------------------
+# LOOP
+# ----------------------------
 running = True
 
 while running:
     clock.tick(60)
-    draw_bg()
 
-    start_btn = button("START GAME", WIDTH//2 - 150, 240, 300, 65)
-    tut_btn = button("TUTORIAL", WIDTH//2 - 150, 330, 300, 65)
-    exit_btn = button("EXIT", WIDTH//2 - 150, 420, 300, 65)
+    draw()
+
+    tut_btn = button("TUTORIAL", WIDTH//2 - 140, 360, 280, 60)
+
+    start_btn = button("START", WIDTH//2 - 140, 440, 280, 60)
+
+    exit_btn = button("EXIT", WIDTH//2 - 140, 520, 280, 60)
 
     pygame.display.update()
 
+    # ----------------------------
+    # EVENTS
+    # ----------------------------
     for event in pygame.event.get():
+
         if event.type == pygame.QUIT:
             running = False
 
         if event.type == pygame.MOUSEBUTTONDOWN:
+
             if start_btn.collidepoint(event.pos):
                 subprocess.run([sys.executable, "Pazaak/pazaak.py"])
 
