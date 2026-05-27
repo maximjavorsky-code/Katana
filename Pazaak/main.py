@@ -78,15 +78,6 @@ def draw():
     overlay.fill((0, 0, 0, 40))
     screen.blit(overlay, (0, 0))
 
-    # title glow
-    title = BIG.render("PAZAAK", True, GOLD)
-
-    glow = BIG.render("PAZAAK", True, (80, 50, 10))
-    screen.blit(glow, glow.get_rect(center=(WIDTH//2 + 3, 88)))
-
-    screen.blit(title, title.get_rect(center=(WIDTH//2, 85)))
-
-
 # ----------------------------
 # LOOP
 # ----------------------------
